@@ -1,12 +1,14 @@
 'use strict';
 
+const mongoose = require('mongoose')
 const path = require('path');
 const fs = require('fs');
 const validate = require('validate.js')
 const config = require('../config/config')
 const { MongoClient } = require('mongodb');
+const { ObjectId } = mongoose.Types
 const { dbPass, dbName, dbPort, dbUser, dbHost0, dbHost1, dbHost2, dbSsl } = require("../config/config");
-const { postProduct, putProduct, showProduct } = require('../service/product');
+const { postProduct, putProduct, showProduct, getProduct } = require('../service/product');
 const Product = require('../model/product');
 
 const createProduct = async (req, res) => {
@@ -72,7 +74,44 @@ const createProduct = async (req, res) => {
   }
 };
 
-const viewPruduct = async (req, res) => {
+const viewPruduct = async (req, res, next) => {	
+	let { skip = 0, limit = 50, name = '' } = req.query
+	let criteria = {
+    isAktif: true,
+    isDelete: false,
+  }
+	let sort = {}
+
+	if (name.length) {
+		criteria = {
+			...criteria,
+			name: {$regex: name, $options: 'i'}
+		}
+	};
+
+	try {
+    const count = await Product.countDocuments(criteria);
+		let { product } = await getProduct(criteria, skip, limit, sort )
+		return res.status(200).json({ status: 200, totalData: count, data: product, message: "Successfully Get Product" })
+	} catch(e) {
+		return res.status(400).json({ status: 400, message: e.message });
+	}
+};
+
+const getProductById = async (req, res) => {
+  const { id } = req.params
+  try {
+    const product = await Product.findById(new ObjectId(id))
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" })
+    }
+    res.status(200).json(product)
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+};
+
+const viewPruductV1 = async (req, res) => {
   try {
     const nameQuery = req.query.name;
     const skip = parseInt(req.query.skip);
@@ -234,5 +273,6 @@ module.exports = {
   viewPruduct,
   createProduct,
   updateProduct,
-  deleteProduct
+  deleteProduct,
+  getProductById
 }

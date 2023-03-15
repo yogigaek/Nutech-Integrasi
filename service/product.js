@@ -1,12 +1,23 @@
 const Product = require('../model/product');
 
+const getProduct = async (criteria, skip, limit) => {
+	try {
+		const count = await Product.find().countDocuments()
+		const product = await Product.find(criteria).skip(parseInt(skip)).limit(parseInt(limit)).sort({createdAt: -1})
+		return data = {product, count}
+	} catch(e) {
+		console.log(e.message)
+		throw Error(e.message)
+	}
+}
+
 const showProduct = async (id) => {
 	try {
 		let product = await Product.findById(id)
 		return product
 	} catch(e) {
 		console.log(e.message)
-		throw Error('Error Product')
+		throw Error(e.message)
 	}
 };
 
@@ -25,7 +36,7 @@ const postProduct = async (payload, filename) => {
 		return product
 	} catch(e) {
 		console.log(e.message)
-		throw Error('Error Product')
+		throw Error(e.message)
 	}
 };
 
@@ -43,11 +54,12 @@ const putProduct = async (id, payload, filename) => {
 		return product
 	} catch(e) {
 		console.log(e.message+'db')
-		throw Error('Error Product')
+		throw Error(e.message)
 	}
 }
 
 module.exports = { 
+	getProduct,
     showProduct,
     postProduct,
     putProduct

@@ -4,12 +4,15 @@ const os = require('os');
 const productController = require('../controller/product');
 
 // For show data all product
-router.get('/product', productController.viewPruduct);
+router.get('/product/', productController.viewPruduct);
+
+// For show data all product by id
+router.get(`/product/:id`, productController.getProductById)
 
 // For show data and filter by name product
 router.get('/product/search', productController.viewPruduct);
-// For create data staff
 
+// For create data staff
 router.post('/product',
     multer({ dest: os.tmpdir() }).single('image'),
     productController.createProduct);
